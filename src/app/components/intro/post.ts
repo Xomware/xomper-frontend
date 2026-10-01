@@ -150,10 +150,13 @@ const DOF = /* glsl */ `
     vec3 sum = texture2D(tSrc, vUv).rgb;
     float total = 1.0;
     float spread = r0;
+    // A per-pixel twist of the tap pattern: sparse taps over a point of light
+    // otherwise print as a ring of copies instead of one soft disc.
+    float twist = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)))) * 6.2832;
     for (int i = 1; i < 28; i++) {
       float fi = float(i);
-      float r = sqrt(fi / 28.0) * MAX_R;
-      float a = fi * 2.39996;
+      float r = sqrt((fi - 0.5 + 0.5 * fract(twist * 7.0)) / 28.0) * MAX_R;
+      float a = fi * 2.39996 + twist;
       vec2 uv = vUv + vec2(cos(a), sin(a)) * r * texel;
       float d = viewDepth(uv);
       float rs = coc(d);
@@ -200,7 +203,9 @@ const COMPOSITE = /* glsl */ `
 
   void main() {
     vec3 sharp = texture2D(tSrc, vUv).rgb;
-    vec4 dof = texture2D(tDof, vUv);
+    // Four bilinear taps a half-res pixel apart smooth the gather's noise.
+    vec2 dt = 1.5 / resolution;
+    vec4 dof = 0.25 * (texture2D(tDof, vUv + vec2(dt.x, dt.y)) + texture2D(tDof, vUv - vec2(dt.x, dt.y)) + texture2D(tDof, vUv + vec2(dt.x, -dt.y)) + texture2D(tDof, vUv - vec2(dt.x, -dt.y)));
     vec3 c = mix(sharp, dof.rgb, smoothstep(0.6, 2.2, dof.a));
     c += texture2D(tBloom, vUv).rgb * bloom;
     c *= exposure;
