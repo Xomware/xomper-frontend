@@ -246,7 +246,7 @@
 
   &--head {
     color: $text-secondary;
-    font-size: 0.75rem;
+    font-size: $text-2xs;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
@@ -366,7 +366,7 @@
 
 .hl-when {
   color: $text-secondary;
-  font-size: 0.75rem;
+  font-size: $text-2xs;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }

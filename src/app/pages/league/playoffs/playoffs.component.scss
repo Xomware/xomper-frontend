@@ -43,7 +43,7 @@
 .round-label {
   color: $text-secondary;
   font-size: 0.8rem;
-  letter-spacing: 0.08em;
+  letter-spacing: $tracking-wide;
   margin: 0 0 $spacing-sm;
   text-transform: uppercase;
 }
@@ -103,7 +103,7 @@
 
     .slot-name {
       color: $text-primary;
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
   }
 
@@ -135,7 +135,7 @@
 
 .slot-seed {
   color: $text-secondary;
-  font-size: 0.75rem;
+  font-size: $text-2xs;
   font-variant-numeric: tabular-nums;
 }
 
@@ -203,7 +203,7 @@
   color: $text-secondary;
   display: block;
   font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  letter-spacing: $tracking-wide;
   margin-bottom: 4px;
   text-transform: uppercase;
 }
@@ -216,5 +216,5 @@
 
 .placement-vs {
   color: $text-secondary;
-  font-size: 0.75rem;
+  font-size: $text-2xs;
 }
