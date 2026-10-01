@@ -9,6 +9,7 @@ import {
 } from '@angular/core/testing'
 
 import { INTRO_PATIENCE, IntroGateComponent } from './intro-gate.component'
+import { IntroScene, stage } from './stadium'
 
 @Component({
   standalone: true,
@@ -24,7 +25,11 @@ describe('IntroGateComponent', () => {
   const html = document.documentElement
 
   // Manual, so a test decides when the scene's chunk "arrives".
-  beforeEach(() => TestBed.configureTestingModule({ deferBlockBehavior: DeferBlockBehavior.Manual }))
+  beforeEach(() => {
+    TestBed.configureTestingModule({ deferBlockBehavior: DeferBlockBehavior.Manual })
+    // The WebGL scene itself is out of scope here; a stand-in draws its frames.
+    spyOn(stage, 'open').and.resolveTo(jasmine.createSpyObj<IntroScene>('scene', ['resize', 'render', 'dispose']))
+  })
   afterEach(() => delete html.dataset['intro'])
 
   function create() {
@@ -37,6 +42,9 @@ describe('IntroGateComponent', () => {
     const [block] = await fixture.getDeferBlocks()
     await block.render(DeferBlockState.Complete)
     fixture.detectChanges()
+    // The scene resolves, then draws its first frame.
+    await Promise.resolve()
+    for (let i = 0; i < 2; i++) await new Promise((r) => requestAnimationFrame(r))
   }
 
   it('stays out of the way when the head script did not ask for the intro', async () => {

@@ -27,8 +27,8 @@
     })();
   </script>
   <style>
-    /* The intro's first frame (src/app/components/intro): the night sky before
-       the lights come on, painted before any JS. Keep it in step with
+    /* The intro's first frame (src/app/components/intro): the stadium before
+       the lights strike, painted before any JS. Keep it in step with
        intro.component.scss. */
     html[data-intro] {
       overflow: hidden;
@@ -38,20 +38,7 @@
       position: fixed;
       inset: 0;
       z-index: 10000;
-      background: linear-gradient(180deg, #050a08 0%, #07130e 45%, #030706 100%);
-    }
-    /* The glow over the field breathes while the bundle loads. */
-    .xi-poster::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(70% 28% at 50% 44%, rgba(0, 255, 171, 0.07), transparent 70%);
-      animation: xi-breathe 1.4s ease-in-out infinite alternate;
-    }
-    @keyframes xi-breathe {
-      from {
-        opacity: 0.5;
-      }
+      background: #040507;
     }
     html[data-intro='poster'] .xi-poster {
       display: block;
