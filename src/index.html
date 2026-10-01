@@ -9,8 +9,62 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // Decides before first paint whether the landing intro plays: signed-out
+    // visitors to / with motion allowed. IntroGateComponent takes it from here.
+    (function () {
+      if (location.pathname !== '/') return;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      try {
+        // Amplify keeps the signed-in user under this key; / sends them to /home.
+        for (var i = 0; i < localStorage.length; i++) {
+          if (/^CognitoIdentityServiceProvider\..+\.LastAuthUser$/.test(localStorage.key(i))) return;
+        }
+      } catch (e) {
+        // Storage blocked: nobody can be signed in, so play it.
+      }
+      document.documentElement.setAttribute('data-intro', 'poster');
+    })();
+  </script>
+  <style>
+    /* The intro's first frame (src/app/components/intro): the night sky before
+       the lights come on, painted before any JS. Keep it in step with
+       intro.component.scss. */
+    html[data-intro] {
+      overflow: hidden;
+    }
+    .xi-poster {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: linear-gradient(180deg, #050a08 0%, #07130e 45%, #030706 100%);
+    }
+    /* The glow over the field breathes while the bundle loads. */
+    .xi-poster::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(70% 28% at 50% 44%, rgba(0, 255, 171, 0.07), transparent 70%);
+      animation: xi-breathe 1.4s ease-in-out infinite alternate;
+    }
+    @keyframes xi-breathe {
+      from {
+        opacity: 0.5;
+      }
+    }
+    html[data-intro='poster'] .xi-poster {
+      display: block;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html[data-intro='poster'] .xi-poster {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="xi-poster" aria-hidden="true"></div>
   <app-root></app-root>
 </body>
 </html>
