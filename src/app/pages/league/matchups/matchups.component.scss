@@ -54,7 +54,7 @@
 }
 
 .board-title {
-  font-size: 1.25rem;
+  font-size: $text-lg;
   margin: 0;
 }
 
@@ -103,7 +103,7 @@
   &--won .side-name,
   &--won .side-score {
     color: $text-primary;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 }
 
@@ -115,7 +115,7 @@
 }
 
 .side-score {
-  font-size: 1.15rem;
+  font-size: $text-md;
   font-variant-numeric: tabular-nums;
 }
 

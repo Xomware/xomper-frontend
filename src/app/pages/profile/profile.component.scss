@@ -193,7 +193,7 @@
 }
 
 .stats-title {
-  font-size: 1.05rem;
+  font-size: $text-base;
   margin: 0 0 $spacing-sm;
 }
 
@@ -217,14 +217,14 @@
 }
 
 .stat-value {
-  font-size: 1.4rem;
+  font-size: $text-xl;
   font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
   color: $text-secondary;
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
+  font-size: $text-xs;
+  letter-spacing: $tracking-wide;
   text-transform: uppercase;
 }
 
@@ -246,8 +246,8 @@
 
   &--head {
     color: $text-secondary;
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
+    font-size: $text-2xs;
+    letter-spacing: $tracking-wide;
     text-transform: uppercase;
   }
 
@@ -294,7 +294,7 @@
 
 .owned-share {
   color: $text-secondary;
-  font-size: 0.8rem;
+  font-size: $text-xs;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -334,7 +334,7 @@
 }
 
 .hl-title {
-  font-size: 0.9rem;
+  font-size: $text-sm;
   margin: 0 0 $spacing-sm;
 }
 
@@ -361,12 +361,12 @@
 
 .hl-over {
   color: $text-secondary;
-  font-size: 0.78rem;
+  font-size: $text-2xs;
 }
 
 .hl-when {
   color: $text-secondary;
-  font-size: 0.75rem;
+  font-size: $text-2xs;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
