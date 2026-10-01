@@ -16,13 +16,13 @@
 }
 
 .career-title {
-  font-size: 1.05rem;
+  font-size: $text-base;
   margin: 0;
 }
 
 .career-link {
   color: $champion-gold;
-  font-size: 0.85rem;
+  font-size: $text-sm;
   text-decoration: none;
 
   &:hover {
@@ -45,14 +45,14 @@
 }
 
 .career-value {
-  font-size: 1.4rem;
+  font-size: $text-xl;
   font-variant-numeric: tabular-nums;
 }
 
 .career-label {
   color: $text-secondary;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
+  font-size: $text-2xs;
+  letter-spacing: $tracking-wide;
   text-transform: uppercase;
 }
 
@@ -61,7 +61,7 @@
 }
 
 .owned-title {
-  font-size: 0.9rem;
+  font-size: $text-sm;
   margin: 0 0 $spacing-sm;
 }
 

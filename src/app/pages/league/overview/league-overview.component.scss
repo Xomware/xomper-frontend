@@ -219,14 +219,14 @@
 }
 
 .stat-value {
-  font-size: 1.35rem;
+  font-size: $text-lg;
   font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
   color: $text-secondary;
   font-size: $text-2xs;
-  letter-spacing: 0.05em;
+  letter-spacing: $tracking-wide;
   text-transform: uppercase;
 }
 

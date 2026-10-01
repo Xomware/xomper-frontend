@@ -12,7 +12,7 @@
 }
 
 .bracket-title {
-  font-size: 1.15rem;
+  font-size: $text-md;
   margin: $spacing-lg 0 $spacing-sm;
 
   &--consolation {
@@ -42,7 +42,7 @@
 
 .round-label {
   color: $text-secondary;
-  font-size: 0.8rem;
+  font-size: $text-xs;
   letter-spacing: $tracking-wide;
   margin: 0 0 $spacing-sm;
   text-transform: uppercase;
@@ -81,8 +81,8 @@
 .match-tag {
   color: $champion-gold;
   display: block;
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
+  font-size: $text-3xs;
+  letter-spacing: $tracking-wide;
   margin-bottom: 4px;
   text-transform: uppercase;
 }
@@ -202,7 +202,7 @@
 .placement-label {
   color: $text-secondary;
   display: block;
-  font-size: 0.68rem;
+  font-size: $text-3xs;
   letter-spacing: $tracking-wide;
   margin-bottom: 4px;
   text-transform: uppercase;

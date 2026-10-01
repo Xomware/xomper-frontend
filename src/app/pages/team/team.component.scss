@@ -349,8 +349,8 @@
 
 .field-row-label {
   color: $text-secondary;
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
+  font-size: $text-3xs;
+  letter-spacing: $tracking-wider;
   text-transform: uppercase;
 }
 
@@ -398,12 +398,12 @@
 
 .chip-pos {
   color: $text-secondary;
-  font-size: 0.65rem;
+  font-size: $text-3xs;
   letter-spacing: $tracking-wide;
 }
 
 .chip-name {
-  font-size: 0.78rem;
+  font-size: $text-2xs;
   line-height: 1.15;
   overflow: hidden;
   text-align: center;
@@ -414,7 +414,7 @@
 
 .chip-team {
   color: $text-secondary;
-  font-size: 0.65rem;
+  font-size: $text-3xs;
 }
 
 .roster-filter {
@@ -456,7 +456,7 @@
   color: $text-secondary;
   cursor: pointer;
   font: inherit;
-  font-size: 0.8rem;
+  font-size: $text-xs;
   padding: 5px 12px;
 
   &:hover {
@@ -494,12 +494,12 @@
 
   dt {
     color: $text-secondary;
-    font-size: 0.72rem;
+    font-size: $text-2xs;
     text-transform: uppercase;
   }
 
   dd {
-    font-size: 0.78rem;
+    font-size: $text-2xs;
     font-variant-numeric: tabular-nums;
     margin: 0;
   }
