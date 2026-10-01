@@ -2,117 +2,34 @@ name: Deploy Frontend
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
   workflow_dispatch:
-    inputs:
-      skip_cache_invalidation:
-        description: 'Skip CloudFront cache invalidation'
-        required: false
-        default: 'false'
 
-# Two pushes landing close together each build their own bundle and both sync
-# the same S3 prefix. Whichever finishes last wins, so an older commit can
-# overwrite a newer one -- which is what happened when #174 and #175 merged
-# six seconds apart and #175's UI never reached the live site.
-#
-# cancel-in-progress: a queued run is building a newer commit, so an in-flight
-# older one has nothing worth finishing.
-concurrency:
-  group: deploy-frontend
-  cancel-in-progress: true
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
-  build-and-deploy:
-    permissions:
-      id-token: write # mint the OIDC token traded for the deploy role
-      contents: read
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-east-1
-
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Retrieve SSM Parameters
-        run: |
-          # Without `set -e` plus an explicit emptiness check, a failed
-          # get-parameter still exits 0: the command substitution yields "",
-          # `echo` succeeds, and the job proceeds to build and DEPLOY an app
-          # with blank credentials. Observed live on 2026-08-24 — missing AWS
-          # credentials produced a green "Retrieve SSM Parameters" step.
-          set -euo pipefail
-
-          fetch_param() {
-            local name="$1"
-            local value
-            value="$(aws ssm get-parameter \
-              --name "/xomper/api/${name}" \
-              --with-decryption \
-              --query "Parameter.Value" \
-              --output text)"
-            if [ -z "$value" ] || [ "$value" = "None" ]; then
-              echo "::error::SSM parameter /xomper/api/${name} resolved empty. Refusing to build with blank credentials."
-              exit 1
-            fi
-            echo "${name}=${value}" >> xomper_credentials.env
-          }
-
-          fetch_param API_ID
-          fetch_param COGNITO_USER_POOL_ID
-          fetch_param COGNITO_CLIENT_ID
-
-      - name: Mask sensitive values
-        run: |
-          echo "::add-mask::$(grep 'API_ID' xomper_credentials.env | cut -d'=' -f2)"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npx ng test --no-watch --browsers=ChromeHeadless
-
-      - name: Inject environment variables into Angular
-        run: |
-          sed -i "s|apiId: '---'|apiId: '$(grep 'API_ID' xomper_credentials.env | cut -d'=' -f2)'|g" src/environments/environment.ts
-          sed -i "s|cognitoUserPoolId: '---'|cognitoUserPoolId: '$(grep 'COGNITO_USER_POOL_ID' xomper_credentials.env | cut -d'=' -f2)'|g" src/environments/environment.ts
-          sed -i "s|cognitoClientId: '---'|cognitoClientId: '$(grep 'COGNITO_CLIENT_ID' xomper_credentials.env | cut -d'=' -f2)'|g" src/environments/environment.ts
-
-      - name: Verify no placeholder values survived injection
-        run: |
-          set -euo pipefail
-          if grep -q "'---'" src/environments/environment.ts; then
-            echo "::error::environment.ts still contains '---' placeholders after injection."
-            grep -n "'---'" src/environments/environment.ts
-            exit 1
-          fi
-
-      - name: Clean up credentials
-        if: always()
-        run: rm -f xomper_credentials.env
-
-      - name: Build
-        run: npm run build -- --configuration production
-
-      - name: Deploy to S3
-        run: aws s3 sync ./dist/xomper-frontend s3://xomper.xomware.com --delete
-
-      - name: Invalidate CloudFront cache
-        run: |
-          DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items[?contains(@, 'xomper.xomware.com')]].Id" --output text)
-          if [ -n "$DISTRIBUTION_ID" ]; then
-            aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*"
-            echo "CloudFront cache invalidated for distribution $DISTRIBUTION_ID"
-          else
-            echo "No CloudFront distribution found for xomper.xomware.com, skipping invalidation"
-          fi
+  deploy:
+    uses: Xomware/github-actions/.github/workflows/deploy-frontend-s3.yml@v1
+    with:
+      app: xomper
+      node-version: '18'
+      ssm: |
+        API_ID=/xomper/api/API_ID
+        COGNITO_USER_POOL_ID=/xomper/api/COGNITO_USER_POOL_ID
+        COGNITO_CLIENT_ID=/xomper/api/COGNITO_CLIENT_ID
+      build-command: |
+        npx ng test --no-watch --browsers=ChromeHeadless
+        f=src/environments/environment.ts
+        sed -i "s|apiId: '---'|apiId: '$API_ID'|" $f
+        sed -i "s|cognitoUserPoolId: '---'|cognitoUserPoolId: '$COGNITO_USER_POOL_ID'|" $f
+        sed -i "s|cognitoClientId: '---'|cognitoClientId: '$COGNITO_CLIENT_ID'|" $f
+        if grep -q "'---'" $f; then
+          echo "::error::environment.ts still has '---' placeholders"
+          exit 1
+        fi
+        npm run build -- --configuration production
+      dist-dir: dist/xomper-frontend
+      bucket: xomper.xomware.com
+      domain: xomper.xomware.com
