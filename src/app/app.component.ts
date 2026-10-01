@@ -13,6 +13,7 @@ import { NgIf } from '@angular/common'
 import { FooterComponent } from './components/footer/footer.component'
 import { XomperNewShellDirective } from './directives/xomper-new-shell.directive'
 import { ShellLayoutComponent } from './components/shell-layout/shell-layout.component'
+import { IntroGateComponent } from './components/intro/intro-gate.component'
 
 @Component({
   selector: 'app-root',
@@ -28,6 +29,7 @@ import { ShellLayoutComponent } from './components/shell-layout/shell-layout.com
     FooterComponent,
     XomperNewShellDirective,
     ShellLayoutComponent,
+    IntroGateComponent,
   ],
 })
 export class AppComponent implements OnDestroy {

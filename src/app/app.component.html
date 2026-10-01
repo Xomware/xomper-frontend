@@ -7,7 +7,7 @@
 <ng-container *ngIf="isPublicLanding; else appChrome">
   <div class="app-container app-container--landing">
     <app-toolbar></app-toolbar>
-    <main id="main-content" class="content" role="main">
+    <main id="main-content" class="content" role="main" tabindex="-1">
       <router-outlet></router-outlet>
     </main>
     <app-footer></app-footer>
@@ -32,3 +32,5 @@
     <app-shell-layout></app-shell-layout>
   </ng-container>
 </ng-template>
+
+<app-intro-gate></app-intro-gate>
