@@ -10,8 +10,8 @@
 
 .sections-label {
   color: $text-secondary;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  font-size: $text-3xs;
+  letter-spacing: $tracking-wide;
   margin-right: 4px;
   text-transform: uppercase;
 }
@@ -23,7 +23,7 @@
   color: $text-secondary;
   cursor: pointer;
   font: inherit;
-  font-size: 0.8rem;
+  font-size: $text-xs;
   padding: 5px 12px;
 
   &:hover {
