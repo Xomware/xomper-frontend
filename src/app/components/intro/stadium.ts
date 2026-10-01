@@ -464,7 +464,7 @@ export class Stadium {
             vec3 view = normalize(vWorld - cameraPosition);
             vec3 scatter = vec3(0.0);
             for (int i = 0; i < 4; i++) {
-              float d = max(dot(view, normalize(banks[i] - cameraPosition)), 0.0);
+              float d = max(dot(view, normalize(banks[i] - cameraPosition)), 1e-5);
               scatter += vec3(1.0, 0.95, 0.88) * levels[i] * (pow(d, 400.0) * 0.5 + pow(d, 40.0) * 0.05 + pow(d, 6.0) * 0.012);
             }
             vec3 zenith = vec3(0.0016, 0.0022, 0.0042);
@@ -896,7 +896,7 @@ export class Stadium {
                 vec2 p = vUv - 0.5;
                 // Faint six-blade aperture star.
                 float a = atan(p.y, p.x);
-                float star = pow(abs(cos(a * 3.0)), 60.0) * smoothstep(0.5, 0.0, length(p));
+                float star = pow(max(abs(cos(a * 3.0)), 1e-5), 60.0) * smoothstep(0.5, 0.0, length(p));
                 gl_FragColor = vec4(vec3(1.0, 0.95, 0.86) * (g * 0.5 + star * 0.2) * strength * vFade, 1.0);
               }
             `,
@@ -944,9 +944,9 @@ export class Stadium {
               varying vec3 vWorld;
               ${NOISE}
               void main() {
-                float edge = pow(abs(dot(normalize(vN), normalize(vView))), 1.6);
+                float edge = pow(max(abs(dot(normalize(vN), normalize(vView))), 1e-5), 1.6);
                 float along = clamp(vAlong, 0.0, 1.0);
-                float fall = smoothstep(0.0, 0.08, along) * pow(1.0 - along, 1.4);
+                float fall = smoothstep(0.0, 0.08, along) * pow(max(1.0 - along, 1e-5), 1.4);
                 float drift = 0.6 + 0.8 * vnoise(vWorld.xy * 0.05 + vWorld.z * 0.03);
                 // Haze right at the lens would fog the frame; real beams only show at a distance.
                 drift *= smoothstep(10.0, 50.0, length(cameraPosition - vWorld));

@@ -190,7 +190,7 @@ const COMPOSITE = /* glsl */ `
     return clamp(outM * rrtOdt(inM * c), 0.0, 1.0);
   }
   vec3 srgb(vec3 c) {
-    return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c));
+    return mix(c * 12.92, 1.055 * pow(max(c, vec3(1e-5)), vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c));
   }
   float hash(vec2 p) {
     vec3 q = fract(vec3(p.xyx) * 0.1031);
