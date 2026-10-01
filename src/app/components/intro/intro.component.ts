@@ -2,83 +2,26 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
+  NgZone,
   afterNextRender,
   inject,
   output,
+  viewChild,
 } from '@angular/core'
 import { DOCUMENT } from '@angular/common'
 import { environment } from '../../../environments/environment'
+import { IntroScene, SCENE_LENGTH, stage } from './stadium'
 
-// Matches the exit fade at the end of intro.component.scss.
-export const INTRO_LENGTH = 5300
-
-// The field is drawn in a 800 × 1000 viewBox, sliced to fill the screen: a
-// phone sees x 170-630, a desktop y 250-750, so everything that matters
-// stays inside that box. Depth is z (1 = near touchline, 4.4 = goal line),
-// projected onto a vanishing line at y = 340.
-const HORIZON = 340
-const DEPTH = 440
-const project = (z: number) => HORIZON + DEPTH / z
-
-interface Line {
-  y: number
-  half: number
-}
-
-interface Player {
-  x: number
-  y: number
-  size: number
-  delay: number
-}
-
-const yardLine = (z: number): Line => {
-  const y = project(z)
-  return { y, half: (y - HORIZON) * 1.3 }
-}
-
-export const YARD_LINES: readonly Line[] = Array.from({ length: 11 }, (_, i) =>
-  yardLine(1 + i * 0.34),
-)
-
-const player = (x: number, z: number, delay: number): Player => ({
-  x,
-  y: project(z),
-  size: 1.6 / z,
-  delay,
-})
-
-// Offense on the line, a QB behind, receivers split wide; the defense a step
-// upfield. Pops in left to right, offense first.
-export const OFFENSE: readonly Player[] = [
-  player(232, 1.5, 0),
-  player(352, 1.5, 60),
-  player(376, 1.5, 90),
-  player(400, 1.5, 120),
-  player(424, 1.5, 150),
-  player(448, 1.5, 180),
-  player(568, 1.5, 240),
-  player(400, 1.2, 300),
-]
-
-export const DEFENSE: readonly Player[] = [
-  player(246, 1.78, 380),
-  player(340, 1.78, 420),
-  player(380, 1.78, 450),
-  player(420, 1.78, 480),
-  player(460, 1.78, 510),
-  player(556, 1.78, 570),
-  player(400, 2.3, 620),
-]
-
-// Lamp banks: the inner pair frames a phone, the outer pair a desktop.
-export const TOWERS: readonly number[] = [90, 205, 595, 710]
+// From the first rendered frame to the end of the exit fade in intro.component.scss.
+export const INTRO_LENGTH = SCENE_LENGTH * 1000
 
 /**
- * The ~5 s landing intro: stadium lights flick on over a night field, a play
- * is drawn up in X's and O's, the ball spirals through the uprights, and the
- * scoreboard flips over to the Xomper logo. CSS animations on transforms and
- * opacity; `index.html` paints the scene's first frame as a poster before JS.
+ * The ~5.5 s landing intro: a stadium at night as a broadcast open. The lights
+ * strike, a telestrator draws the play on the turf, the camera drops behind a
+ * field goal and cranes up to the scoreboard as it turns to the Xomper logo.
+ * The scene is three.js (stadium.ts); `index.html` paints the dark first frame
+ * as a poster before any of it loads.
  */
 @Component({
   selector: 'app-intro',
@@ -86,26 +29,64 @@ export const TOWERS: readonly number[] = [90, 205, 595, 710]
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './intro.component.html',
   styleUrl: './intro.component.scss',
-  host: { role: 'region', 'aria-label': 'Xomper intro' },
+  host: {
+    role: 'region',
+    'aria-label': 'Xomper intro',
+    '(document:keydown.escape)': 'done.emit()',
+  },
 })
 export class IntroComponent {
   readonly done = output<void>()
-  readonly lines = YARD_LINES
-  readonly offense = OFFENSE
-  readonly defense = DEFENSE
-  readonly towers = TOWERS
-  readonly lamps = [0, 1, 2, 3, 4, 5, 6, 7]
-  readonly slats = [0, 1, 2, 3, 4, 5]
-  readonly tagline = environment.appEyebrow
+  private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas')
 
   constructor() {
     const doc = inject(DOCUMENT)
-    const destroyRef = inject(DestroyRef)
+    const zone = inject(NgZone)
+    const host: HTMLElement = inject(ElementRef).nativeElement
+    let scene: IntroScene | null = null
+    let frame = 0
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let destroyed = false
+
+    inject(DestroyRef).onDestroy(() => {
+      destroyed = true
+      cancelAnimationFrame(frame)
+      clearTimeout(timer)
+      window.removeEventListener('resize', resize)
+      scene?.dispose()
+    })
+
+    const resize = () => scene?.resize(window.innerWidth, window.innerHeight)
+
     afterNextRender(() => {
-      // The scene has painted over the poster, which can go.
-      doc.documentElement.dataset['intro'] = 'playing'
-      const id = setTimeout(() => this.done.emit(), INTRO_LENGTH)
-      destroyRef.onDestroy(() => clearTimeout(id))
+      stage.open(this.canvas().nativeElement, environment.appEyebrow).then(
+        (s) => {
+          if (destroyed) return s?.dispose()
+          // No WebGL 2: straight to the landing.
+          if (!s) return this.done.emit()
+          scene = s
+          zone.runOutsideAngular(() => {
+            resize()
+            window.addEventListener('resize', resize)
+            let start = 0
+            const tick = () => {
+              const now = performance.now()
+              if (!start) {
+                start = now
+                // The scene has its own first frame now; the poster can go.
+                doc.documentElement.dataset['intro'] = 'playing'
+                host.classList.add('is-playing')
+                timer = setTimeout(() => zone.run(() => this.done.emit()), INTRO_LENGTH)
+              }
+              s.render((now - start) / 1000)
+              frame = requestAnimationFrame(tick)
+            }
+            frame = requestAnimationFrame(tick)
+          })
+        },
+        // A logo or shader that fails to load costs the intro, not the landing.
+        () => this.done.emit(),
+      )
     })
   }
 }
