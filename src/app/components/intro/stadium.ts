@@ -892,7 +892,9 @@ export class Stadium {
               varying vec2 vUv;
               varying float vFade;
               void main() {
-                float g = texture2D(map, vUv).r;
+                // Alpha, not red: the canvas is premultiplied, so its red is
+                // flat white wherever there is any glow at all (a hard disc).
+                float g = texture2D(map, vUv).a;
                 vec2 p = vUv - 0.5;
                 // Faint six-blade aperture star.
                 float a = atan(p.y, p.x);
